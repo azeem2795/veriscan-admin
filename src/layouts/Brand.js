@@ -28,7 +28,7 @@ import Sidebar from 'components/Sidebar/Sidebar.js';
 
 import routes from 'routes.js';
 
-const Admin = (props) => {
+const Brand = (props) => {
   const mainContent = React.useRef(null);
   const location = useLocation();
   let history = useHistory();
@@ -37,7 +37,7 @@ const Admin = (props) => {
   const updateStore = UpdateStore();
   const store = Store();
 
-  const sidebarRoutes = routes.filter((route) => !route.isChild && route.layout === '/admin');
+  const sidebarRoutes = routes.filter((route) => !route.isChild && route.layout === '/brand');
 
   React.useEffect(() => {
     document.documentElement.scrollTop = 0;
@@ -46,19 +46,19 @@ const Admin = (props) => {
 
     // checkauth
     api('get', '/auth').then((data) => {
-      console.log('User get ', data);
-      updateStore({
-        loggedIn: true,
-        token: data.token,
-        user: data.user,
+      api('get', `/users/${data.user._id}`).then((userData) => {
+        updateStore({
+          user: userData.user,
+          loggedIn: true,
+          token: data.token,
+        });
       });
     });
   }, [location]);
 
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
-      console.log('Path ', prop.path);
-      if (prop.layout === '/admin' && loggedIn) {
+      if (prop.layout === '/brand' && loggedIn) {
         return <Route exact path={prop.layout + prop.path} component={prop.component} key={key} />;
       } else {
         return null;
@@ -75,12 +75,11 @@ const Admin = (props) => {
     return 'Brand';
   };
 
-  console.log('Store value ', store);
   const token = localStorage.getItem('token');
   if (!token) {
     history.push('/auth/login');
-  } else if (store?.user?.role === 'brand') {
-    history.push('/brand/index');
+  } else if (store?.user?.role === 'admin') {
+    history.push('/admin/index');
   }
   return (
     <>
@@ -97,7 +96,7 @@ const Admin = (props) => {
         <AdminNavbar {...props} brandText={getBrandText(props.location.pathname)} />
         <Switch>
           {getRoutes(routes)}
-          <Redirect from='*' to='/admin/index' />
+          <Redirect from='*' to='/brand/index' />
         </Switch>
         <Container fluid>
           <AdminFooter />
@@ -107,4 +106,4 @@ const Admin = (props) => {
   );
 };
 
-export default Admin;
+export default Brand;
